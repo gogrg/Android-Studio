@@ -94,9 +94,10 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        Log.d("TAG", "Event: " + event.getAction());
                         isPress.setValue(true);
-                        new ThreadControl(thread[0], timeSleep, isPress).start();
+                        Thread threadControl = new ThreadControl(thread[0], timeSleep, isPress);
+                        threadControl.start();
+                        Log.d("TAG", "Event: " + event.getAction());
                         return true;
 
                     case MotionEvent.ACTION_UP:

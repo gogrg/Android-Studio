@@ -25,6 +25,7 @@ public class ThreadControl extends Thread{
 //                break;
 //            }
         }
+        Thread.currentThread().interrupt();
 
     }
 
