@@ -24,13 +24,12 @@ import android.widget.TextView;
 //мои классы
 import com.example.gasu_studing.myUtils.*;
 
-import java.util.concurrent.FutureTask;
-
 
 public class MainActivity extends AppCompatActivity {
 
-    static final BooleanMultiThreadControl isPress = new BooleanMultiThreadControl();
-    int timeSleep = 10;
+    private int timeSleep = 10;
+
+    ThreadForTextView thread[] = new ThreadForTextView[4];
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -52,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
         Button button = findViewById(R.id.button);
 
-
-        ThreadForTextView thread[] = new ThreadForTextView[4];
 
         //номер текущего поля для создания потока;
         byte nowTextView[] = {1};
@@ -88,9 +85,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
-
-
         textView1.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -98,21 +92,17 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        isPress.setValue(true);
-                        new ThreadControl(thread[0], isPress).start();
+                        //thread[0].sleepMe();
+                        controlIncrementThread(0, false);
                         Log.d("TAG", "Event: " + event.getAction());
                         return true;
 
                     case MotionEvent.ACTION_UP:
-                        Log.d("TAG", "Event: " + event.getAction());
-                        isPress.setValue(false);
-                        return true;
-                    case MotionEvent.ACTION_CANCEL:
+                        //thread[0].unsleepMe();
+                        controlIncrementThread(0, true);
                         Log.d("TAG", "Event: " + event.getAction());
                         return true;
-                    case MotionEvent.ACTION_MOVE:
-                        Log.d("Tag", "Event: " + event.getAction());
-                        return true;
+
 
                     default:
                         return false;
@@ -120,15 +110,92 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        ConstraintLayout parentLayout = findViewById(R.id.mainLayout);
-//
-//        parentLayout.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                return false; // Разрешаем дочерним элементам обрабатывать события
-//            }
-//        });
+        textView2.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
 
 
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        //thread[0].sleepMe();
+                        controlIncrementThread(1, false);
+                        Log.d("TAG", "Event: " + event.getAction());
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        //thread[0].unsleepMe();
+                        controlIncrementThread(1, true);
+                        Log.d("TAG", "Event: " + event.getAction());
+                        return true;
+
+
+                    default:
+                        return false;
+                }
+            }
+        });
+
+        textView3.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        //thread[0].sleepMe();
+                        controlIncrementThread(2, false);
+                        Log.d("TAG", "Event: " + event.getAction());
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        //thread[0].unsleepMe();
+                        controlIncrementThread(2, true);
+                        Log.d("TAG", "Event: " + event.getAction());
+                        return true;
+
+
+                    default:
+                        return false;
+                }
+            }
+        });
+
+        textView4.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        //thread[0].sleepMe();
+                        controlIncrementThread(3, false);
+                        Log.d("TAG", "Event: " + event.getAction());
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        //thread[0].unsleepMe();
+                        controlIncrementThread(3, true);
+                        Log.d("TAG", "Event: " + event.getAction());
+                        return true;
+
+
+                    default:
+                        return false;
+                }
+            }
+        });
+
+    }
+
+    //status = 1 - работать, status = 0 - остановить
+    private void controlIncrementThread(int numberThread, boolean status) {
+        if (numberThread < 0 || numberThread > 4) {
+            return;
+        }
+        if (status) {
+            thread[numberThread].unsleepMe();
+        } else {
+            thread[numberThread].sleepMe();
+        }
     }
 }

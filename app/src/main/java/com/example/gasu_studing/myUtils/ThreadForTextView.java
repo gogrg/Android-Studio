@@ -2,8 +2,6 @@ package com.example.gasu_studing.myUtils;
 
 import android.widget.TextView;
 
-import java.util.concurrent.Callable;
-
 public class ThreadForTextView extends Thread {
     protected TextView textView;
     int timeSleep;
@@ -25,7 +23,7 @@ public class ThreadForTextView extends Thread {
                 catch(InterruptedException e){
                     System.out.println(e);
                 }
-                sleepFlag = false;
+
                 continue;
             }
             try {
@@ -40,5 +38,9 @@ public class ThreadForTextView extends Thread {
 
     public void sleepMe(){
         sleepFlag = true;
+    }
+
+    public void unsleepMe(){
+        sleepFlag = false;
     }
 }
