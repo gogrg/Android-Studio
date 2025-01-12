@@ -24,8 +24,14 @@ import android.widget.TextView;
 //мои классы
 import com.example.gasu_studing.myUtils.*;
 
+import java.util.concurrent.FutureTask;
+
 
 public class MainActivity extends AppCompatActivity {
+
+    static final BooleanMultiThreadControl isPress = new BooleanMultiThreadControl();
+    int timeSleep = 10;
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -59,19 +65,19 @@ public class MainActivity extends AppCompatActivity {
                 if (nowTextView[0] < 5) {
                     switch (nowTextView[0]) {
                         case 1:
-                            thread[0] = new ThreadForTextView(textView1);
+                            thread[0] = new ThreadForTextView(textView1, timeSleep);
                             thread[0].start();
                             break;
                         case 2:
-                            thread[1] = new ThreadForTextView(textView2);
+                            thread[1] = new ThreadForTextView(textView2, timeSleep);
                             thread[1].start();
                             break;
                         case 3:
-                            thread[2] = new ThreadForTextView(textView3);
+                            thread[2] = new ThreadForTextView(textView3, timeSleep);
                             thread[2].start();
                             break;
                         case 4:
-                            thread[3] = new ThreadForTextView(textView4);
+                            thread[3] = new ThreadForTextView(textView4, timeSleep);
                             thread[3].start();
                             break;
                     }
@@ -83,9 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        BooleanMultiThreadControl isPress = new BooleanMultiThreadControl();
 
-        int timeSleep = 10;
 
         textView1.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -95,8 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         isPress.setValue(true);
-                        Thread threadControl = new ThreadControl(thread[0], timeSleep, isPress);
-                        threadControl.start();
+                        new ThreadControl(thread[0], isPress).start();
                         Log.d("TAG", "Event: " + event.getAction());
                         return true;
 
@@ -106,11 +109,9 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case MotionEvent.ACTION_CANCEL:
                         Log.d("TAG", "Event: " + event.getAction());
-                        isPress.setValue(false);
                         return true;
                     case MotionEvent.ACTION_MOVE:
                         Log.d("Tag", "Event: " + event.getAction());
-                        isPress.setValue(false);
                         return true;
 
                     default:
@@ -119,14 +120,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ConstraintLayout parentLayout = findViewById(R.id.mainLayout);
-
-        parentLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false; // Разрешаем дочерним элементам обрабатывать события
-            }
-        });
+//        ConstraintLayout parentLayout = findViewById(R.id.mainLayout);
+//
+//        parentLayout.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                return false; // Разрешаем дочерним элементам обрабатывать события
+//            }
+//        });
 
 
     }
