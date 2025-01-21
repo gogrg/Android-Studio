@@ -1,29 +1,31 @@
 package com.example.gasu_studing.myUtils;
 
+import android.util.Log;
 import android.widget.TextView;
 
-public class ThreadForTextView extends Thread {
-    protected TextView textView;
-    int timeSleep;
-    protected boolean sleepFlag;
+import java.util.concurrent.Callable;
 
-    public ThreadForTextView(TextView textView, int timeSleep) {
+public class ThreadForTextView implements Callable<Integer> {
+    protected TextView textView;
+    protected int timeSleep;
+    protected boolean sleepFlag;
+    protected boolean startFlag = false;
+
+    public ThreadForTextView(TextView textView) {
         this.textView = textView;
-        this.timeSleep = timeSleep;
         this.sleepFlag = false;
+        startFlag = true;
+
+
+        textView.setOnTouchListener(new TextViewTouchListener(this));
+
+        Log.d("TAG", "Construcor class ThreadForTextView started. Value startFlag - " + startFlag);
     }
 
     @Override
-    public void run() {
-        while (true){
-            if (sleepFlag){
-                try{
-                    Thread.sleep(timeSleep);
-                }
-                catch(InterruptedException e){
-                    System.out.println(e);
-                }
-
+    public Integer call() {
+        while (true) {
+            if (sleepFlag) {
                 continue;
             }
             try {
@@ -36,11 +38,16 @@ public class ThreadForTextView extends Thread {
 
     }
 
-    public void sleepMe(){
+
+    public boolean checkStart() {
+        return startFlag;
+    }
+
+    public void sleepMe() {
         sleepFlag = true;
     }
 
-    public void unsleepMe(){
+    public void unsleepMe() {
         sleepFlag = false;
     }
 }

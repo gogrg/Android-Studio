@@ -1,3 +1,7 @@
+//2 случая: один раз баг произошёл, и на месте, где кнопка при нажатии происходило нажатие на родительский контейнер
+//второй случай - при нажатии на кнопку не происходит ни запуск потока, ни обработка нажатия на родительский контейнер
+
+
 package com.example.gasu_studing;
 
 
@@ -13,7 +17,6 @@ import androidx.core.view.WindowInsetsCompat;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -24,13 +27,13 @@ import android.widget.TextView;
 //мои классы
 import com.example.gasu_studing.myUtils.*;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class MainActivity extends AppCompatActivity {
-
-    private int timeSleep = 10;
-
-    ThreadForTextView thread[] = new ThreadForTextView[4];
-
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -48,154 +51,116 @@ public class MainActivity extends AppCompatActivity {
         TextView textView2 = findViewById(R.id.textView2);
         TextView textView3 = findViewById(R.id.textView3);
         TextView textView4 = findViewById(R.id.textView4);
+        TextView textView5 = findViewById(R.id.textView5);
 
-        Button button = findViewById(R.id.button);
+        Button button = (Button) findViewById(R.id.button);
 
 
         //номер текущего поля для создания потока;
-        byte nowTextView[] = {1};
 
+        AtomicInteger nowTextView = new AtomicInteger(1);
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (nowTextView[0] < 5) {
-                    switch (nowTextView[0]) {
+                Log.d("TAG", "onClisk is started");
+
+
+                int currentTextView = nowTextView.get();
+
+                Log.d("TAG", "Start metod. Value nowTextView - " + nowTextView);
+
+                if (currentTextView < 5) {
+                    Log.d("TAG", "Block with switch case is started");
+                    switch (currentTextView) {
                         case 1:
-                            thread[0] = new ThreadForTextView(textView1, timeSleep);
-                            thread[0].start();
+                            FutureTask<Integer> taskTextView = new FutureTask<>(new ThreadForTextView(textView1));
+                            threadPool.submit(taskTextView);
+                            Log.d("Tag", "Case 1 success finish");
                             break;
                         case 2:
-                            thread[1] = new ThreadForTextView(textView2, timeSleep);
-                            thread[1].start();
+                            taskTextView = new FutureTask<>(new ThreadForTextView(textView2));
+                            threadPool.submit(taskTextView);
+                            Log.d("Tag", "Case 2 success finish");
                             break;
                         case 3:
-                            thread[2] = new ThreadForTextView(textView3, timeSleep);
-                            thread[2].start();
+                            taskTextView = new FutureTask<>(new ThreadForTextView(textView3));
+                            threadPool.submit(taskTextView);
+                            Log.d("Tag", "Case 3 success finish");
                             break;
                         case 4:
-                            thread[3] = new ThreadForTextView(textView4, timeSleep);
-                            thread[3].start();
+                            taskTextView = new FutureTask<>(new ThreadForTextView(textView4));
+                            threadPool.submit(taskTextView);
+                            Log.d("Tag", "Case 4 success finish");
                             break;
                     }
-
-                    nowTextView[0]++;
+                    //пришлось убрать проверку так как теперь не получить доступ к конкретному потоку
+                    //if (thread[currentTextView[0] - 1].checkStart()) {
+                    nowTextView.incrementAndGet();
+                    Log.d("TAG", "End metod. Value nowTextView - " + nowTextView);
+                    //}
+                    //если я правильно понимаю, то следующие полсекунды нельзя будет нажать
+                    button.postDelayed(() -> button.setEnabled(true), 500);
                 }
             }
         });
 
+        ConstraintLayout parentLayout = findViewById(R.id.mainLayout);
 
-        textView1.setOnTouchListener(new View.OnTouchListener() {
+        parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public void onClick(View v) {
 
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        //thread[0].sleepMe();
-                        controlIncrementThread(0, false);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                        //thread[0].unsleepMe();
-                        controlIncrementThread(0, true);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-
-                    default:
-                        return false;
-                }
+                Log.d("ParentView", "Parent layout is click");
+//                int[] location = new int[2];
+//                button.getLocationOnScreen(location);
+//                Log.d("Координата кнопки по X", "Location - " + location[0]);
+//                Log.d("Координата кнопки по Y", "Location - " + location[1]);
             }
         });
 
-        textView2.setOnTouchListener(new View.OnTouchListener() {
+        //попытки выяснить, что происходит с главным потоком
+        class ListenerMain extends Thread {
+            private Thread mainThread;
+
+            ListenerMain(Thread mainThread){
+                this.mainThread = mainThread;
+            }
+
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        //thread[0].sleepMe();
-                        controlIncrementThread(1, false);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                        //thread[0].unsleepMe();
-                        controlIncrementThread(1, true);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-
-                    default:
-                        return false;
+            public void start() {
+                while (true) {
+                    try {
+                        if (mainThread.isAlive()) {
+                            Log.d("Main Thread", "Is worked");
+                        } else {
+                            Log.d("Main Thread", "Now worked");
+                        }
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Log.d("ListenerMain interrupted", " " + e);
+                    }
                 }
             }
-        });
+        }
 
-        textView3.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
+        Thread mainThread = Thread.currentThread();
 
+        ListenerMain listenerMain = new ListenerMain(mainThread);
 
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        //thread[0].sleepMe();
-                        controlIncrementThread(2, false);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
+        listenerMain.start();
 
-                    case MotionEvent.ACTION_UP:
-                        //thread[0].unsleepMe();
-                        controlIncrementThread(2, true);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-
-                    default:
-                        return false;
-                }
-            }
-        });
-
-        textView4.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        //thread[0].sleepMe();
-                        controlIncrementThread(3, false);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                        //thread[0].unsleepMe();
-                        controlIncrementThread(3, true);
-                        Log.d("TAG", "Event: " + event.getAction());
-                        return true;
-
-
-                    default:
-                        return false;
-                }
-            }
-        });
+        //while (true) {
+//            try {
+//                Thread.sleep(100);
+//                textView5.setText(String.valueOf(Integer.parseInt(textView5.getText().toString()) + 1));
+//            } catch (InterruptedException e) {
+//                System.out.println("Thread in interrupted");
+//            }
+        //}
 
     }
 
-    //status = 1 - работать, status = 0 - остановить
-    private void controlIncrementThread(int numberThread, boolean status) {
-        if (numberThread < 0 || numberThread > 4) {
-            return;
-        }
-        if (status) {
-            thread[numberThread].unsleepMe();
-        } else {
-            thread[numberThread].sleepMe();
-        }
-    }
 }
