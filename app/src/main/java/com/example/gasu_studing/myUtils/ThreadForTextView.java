@@ -4,20 +4,19 @@ import android.util.Log;
 import android.widget.TextView;
 
 import java.util.concurrent.Callable;
-
+import java.util.concurrent.BlockingQueue;
 public class ThreadForTextView implements Callable<Integer> {
     protected TextView textView;
     protected int timeSleep;
     protected boolean sleepFlag;
     protected boolean startFlag = false;
 
-    public ThreadForTextView(TextView textView) {
+    public ThreadForTextView(TextView textView, EventQueue eventQueue) {
         this.textView = textView;
         this.sleepFlag = false;
         startFlag = true;
 
-
-        textView.setOnTouchListener(new TextViewTouchListener(this));
+        textView.setOnTouchListener(new TextViewTouchListener(this, eventQueue));
 
         Log.d("TAG", "Construcor class ThreadForTextView started. Value startFlag - " + startFlag);
     }

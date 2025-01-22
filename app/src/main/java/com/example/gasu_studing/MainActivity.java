@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class MainActivity extends AppCompatActivity {
+    EventQueue eventQueue = new EventQueue();
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -70,45 +72,46 @@ public class MainActivity extends AppCompatActivity {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public synchronized void onClick(View v) {
-                        Log.d("TAG", "onClisk is started");
+                        eventQueue.addEvent(() -> {
+
+                            Log.d("TAG", "onClisk is started");
 
 
-                        int currentTextView = nowTextView.get();
+                            int currentTextView = nowTextView.get();
 
-                        Log.d("TAG", "Start metod. Value nowTextView - " + nowTextView);
+                            Log.d("TAG", "Start metod. Value nowTextView - " + nowTextView);
 
-                        if (currentTextView < 5) {
-                            Log.d("TAG", "Block with switch case is started");
-                            switch (currentTextView) {
-                                case 1:
-                                    FutureTask<Integer> taskTextView = new FutureTask<>(new ThreadForTextView(textView1));
-                                    threadPool.submit(taskTextView);
-                                    Log.d("Tag", "Case 1 success finish");
-                                    break;
-                                case 2:
-                                    taskTextView = new FutureTask<>(new ThreadForTextView(textView2));
-                                    threadPool.submit(taskTextView);
-                                    Log.d("Tag", "Case 2 success finish");
-                                    break;
-                                case 3:
-                                    taskTextView = new FutureTask<>(new ThreadForTextView(textView3));
-                                    threadPool.submit(taskTextView);
-                                    Log.d("Tag", "Case 3 success finish");
-                                    break;
-                                case 4:
-                                    taskTextView = new FutureTask<>(new ThreadForTextView(textView4));
-                                    threadPool.submit(taskTextView);
-                                    Log.d("Tag", "Case 4 success finish");
-                                    break;
+                            if (currentTextView < 5) {
+                                Log.d("TAG", "Block with switch case is started");
+                                switch (currentTextView) {
+                                    case 1:
+                                        FutureTask<Integer> taskTextView = new FutureTask<>(new ThreadForTextView(textView1, eventQueue));
+                                        threadPool.submit(taskTextView);
+                                        Log.d("Tag", "Case 1 success finish");
+                                        break;
+                                    case 2:
+                                        taskTextView = new FutureTask<>(new ThreadForTextView(textView2, eventQueue));
+                                        threadPool.submit(taskTextView);
+                                        Log.d("Tag", "Case 2 success finish");
+                                        break;
+                                    case 3:
+                                        taskTextView = new FutureTask<>(new ThreadForTextView(textView3, eventQueue));
+                                        threadPool.submit(taskTextView);
+                                        Log.d("Tag", "Case 3 success finish");
+                                        break;
+                                    case 4:
+                                        taskTextView = new FutureTask<>(new ThreadForTextView(textView4, eventQueue));
+                                        threadPool.submit(taskTextView);
+                                        Log.d("Tag", "Case 4 success finish");
+                                        break;
+                                }
+                                //пришлось убрать проверку так как теперь не получить доступ к конкретному потоку
+                                //if (thread[currentTextView[0] - 1].checkStart()) {
+                                nowTextView.incrementAndGet();
+                                Log.d("TAG", "End metod. Value nowTextView - " + nowTextView);
+                                //}
                             }
-                            //пришлось убрать проверку так как теперь не получить доступ к конкретному потоку
-                            //if (thread[currentTextView[0] - 1].checkStart()) {
-                            nowTextView.incrementAndGet();
-                            Log.d("TAG", "End metod. Value nowTextView - " + nowTextView);
-                            //}
-                            //если я правильно понимаю, то следующие полсекунды нельзя будет нажать
-                            button.postDelayed(() -> button.setEnabled(true), 500);
-                        }
+                        }, "add new thread");
                     }
                 });
             }
@@ -116,6 +119,15 @@ public class MainActivity extends AppCompatActivity {
 
         buttonControl.run();
 
+        Thread queueThread = new Thread() {
+
+            @Override
+            public void run(){
+                eventQueue.processEvents();
+            }
+        };
+
+        queueThread.start();
 
         ConstraintLayout parentLayout = findViewById(R.id.mainLayout);
 

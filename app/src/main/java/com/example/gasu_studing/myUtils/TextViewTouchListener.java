@@ -9,38 +9,46 @@ import com.example.gasu_studing.R;
 class TextViewTouchListener implements View.OnTouchListener {
     private ThreadForTextView threadThisTextView;
 
-    public TextViewTouchListener(ThreadForTextView thread) {
+    private EventQueue eventQueue;
+    public TextViewTouchListener(ThreadForTextView thread, EventQueue eventQueue) {
         threadThisTextView = thread;
+        this.eventQueue = eventQueue;
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+            //Log.d("TAG", "TextView " + v.getId() + " pressed");
 
-        Log.d("TAG", "TextView " + v.getId() + " pressed");
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
+                    if (threadThisTextView.checkStart()) {
+                        eventQueue.addEvent(() -> {
+                            threadThisTextView.sleepMe();
+                        }, "TextView " + v.getId() + " pressed");
+                    }
 
-                if (threadThisTextView.checkStart()) {
-                    controlIncrementThread(false);
-                }
+                    //Log.d("TAG", "TextView " + v.getId() + " Event: " + event.getAction());
+                    //return true;
 
-                Log.d("TAG", "TextView " + v.getId() + " Event: " + event.getAction());
-                return true;
+                case MotionEvent.ACTION_UP:
 
-            case MotionEvent.ACTION_UP:
+                    if (threadThisTextView.checkStart()) {
+                        //controlIncrementThread(true);
+                        eventQueue.addEvent(() -> {
+                            threadThisTextView.unsleepMe();
+                        }, "TextView " + v.getId() + " pressed");
+                    }
 
-                if (threadThisTextView.checkStart()) {
-                    controlIncrementThread(true);
-                }
-
-                Log.d("TAG", "TextView " + v.getId() + " Event: " + event.getAction());
-                return true;
+                    //Log.d("TAG", "TextView " + v.getId() + " Event: " + event.getAction());
+                    //return true;
 
 
-            default:
-                return false;
-        }
+                default:
+                    //return false;
+            }
+
+        return true;
     }
 
     private void controlIncrementThread(boolean status) {
