@@ -46,26 +46,6 @@
         app:layout_constraintTop_toBottomOf="@+id/button" />
 
     <TextView
-        android:id="@+id/textView5"
-        android:layout_width="105dp"
-        android:layout_height="87dp"
-        android:layout_marginStart="144dp"
-        android:layout_marginTop="80dp"
-        android:background="#2196F3"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:fontFamily="sans-serif-black"
-        android:lineSpacingExtra="8sp"
-        android:text="0"
-        android:textAlignment="center"
-        android:textAllCaps="true"
-        android:textSize="34sp"
-        android:typeface="sans"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
-
-    <TextView
         android:id="@+id/textView2"
         android:layout_width="156dp"
         android:layout_height="119dp"

@@ -16,6 +16,7 @@ class TextViewTouchListener implements View.OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
+        Log.d("TAG", "TextView " + v.getId() + " pressed");
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -24,7 +25,7 @@ class TextViewTouchListener implements View.OnTouchListener {
                     controlIncrementThread(false);
                 }
 
-                Log.d("TAG", "Event: " + event.getAction());
+                Log.d("TAG", "TextView " + v.getId() + " Event: " + event.getAction());
                 return true;
 
             case MotionEvent.ACTION_UP:
@@ -33,7 +34,7 @@ class TextViewTouchListener implements View.OnTouchListener {
                     controlIncrementThread(true);
                 }
 
-                Log.d("TAG", "Event: " + event.getAction());
+                Log.d("TAG", "TextView " + v.getId() + " Event: " + event.getAction());
                 return true;
 
 
