@@ -5,18 +5,25 @@ import android.widget.TextView;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ThreadForTextView implements Callable<Integer> {
     protected TextView textView;
     protected int timeSleep;
-    protected boolean sleepFlag;
-    protected boolean startFlag = false;
+    //не придумал, что тут будет лучше, volatile или sinchronized, так как только внутри потока используются переменные и обращаюсь к ним,
+    // но мне из того, что нагуглил, думаю, что volatile, так как другие потоки сюда не обращаются
+    protected volatile boolean sleepFlag;
+    protected volatile boolean startFlag = false;
+
+    protected EventQueue eventQueue;
 
     public ThreadForTextView(TextView textView, EventQueue eventQueue) {
         this.textView = textView;
         this.sleepFlag = false;
         startFlag = true;
+        this.eventQueue = eventQueue;
 
-        textView.setOnTouchListener(new TextViewTouchListener(this, eventQueue));
+        textView.setOnTouchListener(new TextViewTouchListener(this));
 
         Log.d("TAG", "Construcor class ThreadForTextView started. Value startFlag - " + startFlag);
     }
@@ -24,12 +31,19 @@ public class ThreadForTextView implements Callable<Integer> {
     @Override
     public Integer call() {
         while (true) {
-            if (sleepFlag) {
-                continue;
-            }
             try {
+                Log.d("TAG", "sleepFlag = " + sleepFlag);
+                if (sleepFlag) {
+                    Thread.sleep(timeSleep);
+                    continue;
+                }
                 Thread.sleep(100);
-                textView.setText(String.valueOf(Integer.parseInt(textView.getText().toString()) + 1));
+
+                eventQueue.addEvent(() -> {
+                    textView.setText(String.valueOf(Integer.parseInt(textView.getText().toString()) + 1));
+                }, "Increment textView" + textView.getId());
+
+
             } catch (InterruptedException e) {
                 System.out.println("Thread in interrupted");
             }

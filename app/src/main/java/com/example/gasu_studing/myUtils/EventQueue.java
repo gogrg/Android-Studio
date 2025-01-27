@@ -16,16 +16,15 @@ public class EventQueue {
     }
 
 
+    public void processEvents() {
 
-    public void processEvents(){
-
-        while (true){
+        while (true) {
             if (!queue.isEmpty()) {
-                try{
+                try {
                     queue.take().run();
                     Log.d("TAG", "Event " + messageQueue.take() + " is started");
-                    Thread.sleep(500);
-                } catch (InterruptedException e){
+                    //Thread.sleep(500);
+                } catch (InterruptedException e) {
                     Log.d("TAG", "Thread with queue is interrupted");
                 }
             }
