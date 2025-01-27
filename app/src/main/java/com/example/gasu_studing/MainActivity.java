@@ -1,13 +1,8 @@
-//2 случая: один раз баг произошёл, и на месте, где кнопка при нажатии происходило нажатие на родительский контейнер
-//второй случай - при нажатии на кнопку не происходит ни запуск потока, ни обработка нажатия на родительский контейнер
-
-
 package com.example.gasu_studing;
 
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -35,6 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
     EventQueue eventQueue = new EventQueue();
+    ExecutorService threadPool = Executors.newFixedThreadPool(4);
+    AtomicInteger nowTextView = new AtomicInteger(1);
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -54,64 +51,50 @@ public class MainActivity extends AppCompatActivity {
         TextView textView3 = findViewById(R.id.textView3);
         TextView textView4 = findViewById(R.id.textView4);
 
-        Button button = (Button) findViewById(R.id.button);
+        Button button = findViewById(R.id.button);
 
 
-        //номер текущего поля для создания потока;
-
-        AtomicInteger nowTextView = new AtomicInteger(1);
-
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
-
-
-        Thread buttonControl = new Thread(){
+        Thread buttonControl = new Thread() {
 
             @Override
-            public void run(){
+            public void run() {
 
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public synchronized void onClick(View v) {
-                        eventQueue.addEvent(() -> {
+                        Log.d("TAG", "onClisk is started");
 
-                            Log.d("TAG", "onClisk is started");
+                        int currentTextView = nowTextView.get();
+                        nowTextView.incrementAndGet();
 
+                        Log.d("TAG", "Start metod. Value nowTextView - " + nowTextView);
 
-                            int currentTextView = nowTextView.get();
-
-                            Log.d("TAG", "Start metod. Value nowTextView - " + nowTextView);
-
-                            if (currentTextView < 5) {
-                                Log.d("TAG", "Block with switch case is started");
-                                switch (currentTextView) {
-                                    case 1:
-                                        FutureTask<Integer> taskTextView = new FutureTask<>(new ThreadForTextView(textView1, eventQueue));
-                                        threadPool.submit(taskTextView);
-                                        Log.d("Tag", "Case 1 success finish");
-                                        break;
-                                    case 2:
-                                        taskTextView = new FutureTask<>(new ThreadForTextView(textView2, eventQueue));
-                                        threadPool.submit(taskTextView);
-                                        Log.d("Tag", "Case 2 success finish");
-                                        break;
-                                    case 3:
-                                        taskTextView = new FutureTask<>(new ThreadForTextView(textView3, eventQueue));
-                                        threadPool.submit(taskTextView);
-                                        Log.d("Tag", "Case 3 success finish");
-                                        break;
-                                    case 4:
-                                        taskTextView = new FutureTask<>(new ThreadForTextView(textView4, eventQueue));
-                                        threadPool.submit(taskTextView);
-                                        Log.d("Tag", "Case 4 success finish");
-                                        break;
-                                }
-                                //пришлось убрать проверку так как теперь не получить доступ к конкретному потоку
-                                //if (thread[currentTextView[0] - 1].checkStart()) {
-                                nowTextView.incrementAndGet();
-                                Log.d("TAG", "End metod. Value nowTextView - " + nowTextView);
-                                //}
+                        if (currentTextView < 5) {
+                            Log.d("TAG", "Block with switch case is started");
+                            switch (currentTextView) {
+                                case 1:
+                                    FutureTask<Integer> taskTextView = new FutureTask<>(new ThreadForTextView(textView1, eventQueue));
+                                    threadPool.submit(taskTextView);
+                                    Log.d("Tag", "Case 1 success finish");
+                                    break;
+                                case 2:
+                                    taskTextView = new FutureTask<>(new ThreadForTextView(textView2, eventQueue));
+                                    threadPool.submit(taskTextView);
+                                    Log.d("Tag", "Case 2 success finish");
+                                    break;
+                                case 3:
+                                    taskTextView = new FutureTask<>(new ThreadForTextView(textView3, eventQueue));
+                                    threadPool.submit(taskTextView);
+                                    Log.d("Tag", "Case 3 success finish");
+                                    break;
+                                case 4:
+                                    taskTextView = new FutureTask<>(new ThreadForTextView(textView4, eventQueue));
+                                    threadPool.submit(taskTextView);
+                                    Log.d("Tag", "Case 4 success finish");
+                                    break;
                             }
-                        }, "add new thread");
+                            Log.d("TAG", "End metod. Value nowTextView - " + nowTextView);
+                        }
                     }
                 });
             }
@@ -122,28 +105,12 @@ public class MainActivity extends AppCompatActivity {
         Thread queueThread = new Thread() {
 
             @Override
-            public void run(){
+            public void run() {
                 eventQueue.processEvents();
             }
         };
 
         queueThread.start();
-
-        ConstraintLayout parentLayout = findViewById(R.id.mainLayout);
-
-        parentLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public synchronized void onClick(View v) {
-
-                Log.d("ParentView", "Parent layout is click");
-//                int[] location = new int[2];
-//                button.getLocationOnScreen(location);
-//                Log.d("Координата кнопки по X", "Location - " + location[0]);
-//                Log.d("Координата кнопки по Y", "Location - " + location[1]);
-            }
-        });
-
-
     }
 
 }
